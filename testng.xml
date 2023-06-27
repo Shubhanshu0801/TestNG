@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd"><suite name="All Test Suite"><test verbose="2" preserve-order="true" name="C:/Users/Ishani/IdeaProjects/PracticeTestNG/src/main/java/com/parallelTesting/TestClass1.java"><classes><class name="com.parallelTesting.TestClass1"><methods><include name="testMethod1"/><include name="testMethod2"/><include name="testMethod3"/><include name="testMethod4"/></methods></class></classes></test></suite>

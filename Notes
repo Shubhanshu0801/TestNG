@@ -1,0 +1,1545 @@
+TestNG:
+It is a testing framework for Java programming language inspired from JUnit and NUnit.
+It is developed by Cedric Beust.
+It can be used for unit, integration, end-to-end, functional testing.
+It has various new features:
+   1. Support for data-driven testing(@DataProvider).
+   2. Support for parameters etc.
+---------------------------------------------------------------------------------------------------------------
+Annotations:
+It is a form of metadata that can be added to the java source code.
+Class, methods, variables, parameters and even java package can be annotated.
+It can provide some information.
+TestNG Annotations:
+@Test
+@BeforeSuite
+@AfterSuite
+@BeforeTest
+@AfterTest
+@BeforeClass
+@AfterClass
+@BeforeMethod
+@AfterMethod
+@BeforeGroup
+@AfterGroup
+
+@DataProvider
+@Parameters
+@Factory
+@Listeners
+@Ignore
+-----------------------------------------------------------------------------------------------------------------
+What is testng.xml file?
+This file is a configuration file which contains the test execution details(test execution flow).
+   package com.testng;
+   public class FirstTest {
+      @Test
+      public void openGoogle() {
+         WebDriverManager.chromedriver().setup();
+         WebDriver driver = new ChromeDriver();
+         driver.get("https://www.google.com/");
+         String title = driver.getTitle();
+         System.out.println(title);
+         driver.quit();
+      }
+      @Test
+      public void openFacebook() {
+         WebDriverManager.chromedriver().setup();
+         WebDriver driver = new ChromeDriver();
+         driver.get("https://www.facebook.com/");
+         String title = driver.getTitle();
+         System.out.println(title);
+         driver.quit();
+      }
+   }
+In the above example we have two test cases in one class file, so we can run each test case individually.
+But if there are multiple classes and multiple test cases inside them we cannot run them individually.
+In this case we use testng.xml file. Which class you want to execute or what test cases you want to execute.
+So, using testng.xml file you can control the test execution flow.
+------------------------------------------------------------------------------------------------------------------
+Assertions:
+Assertion is an expression which will verify the actual test outcome with the expected test outcome.
+
+Assertion is of two types
+1. Hard Assertion:
+In hard assertion, if any line throws Exception then the subsequent lines will not be executed.
+   Example:
+   package com.testng;
+   public class AssertionsDemo {
+      @Test
+      public void testHYRTutorials() {WebDriverManager.chromedriver().setup();
+         WebDriver driver = new ChromeDriver();
+         driver.get("https://www.hyrtutorials.com/");
+         driver.manage().window().maximize();
+         driver.manage().deleteAllCookies();
+         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));
+         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+         String expectedTitle = "H Y R Tutorials - H Y R Tutorials";
+         String actualTitle = driver.getTitle();
+         Assert.assertEquals(actualTitle, expectedTitle);
+         driver.quit();
+      }
+   }
+The Assert statement can also be written as:--> custom message is added in Assert statement.
+   Assert.assertEquals(actualTitle, expectedTitle, "Title is mismatched");
+This error message will be displayed only when actual title is not equal to expected title.
+Assert is a class in TestNG having static methods as:
+   1. assertEquals
+   2. assertNotEquals
+   3. assertTrue
+   4. assertFalse
+   5. assertNull
+   6. assertNotNull
+
+2. Soft Assertion:
+In soft assertion, if any line throws Exception then the subsequent lines will be executed.
+We should use this assertion whenever we are writing a no of assertions.
+Even though some assertion is failed but the subsequent lines(or other assertions) will be executed.
+To throw the exception in the last we can write:
+   softAssert.assertAll();
+   Example:
+   package com.testng;
+   public class AssertionsDemo {
+      @Test
+      public void openFacebook() throws InterruptedException {
+         WebDriverManager.chromedriver().setup();
+         WebDriver driver = new ChromeDriver();
+         driver.get("https://www.facebook.com/");
+         driver.manage().window().maximize();
+         driver.manage().deleteAllCookies();
+         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));
+         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+         driver.findElement(By.id("email")).sendKeys("HYR Tutorials", Keys.ENTER);
+         Thread.sleep(5000);
+         SoftAssert softAssert = new SoftAssert();
+         //1. Title Assertion
+         String expectedTitle = "log in to Facebook";
+         String actualTitle = driver.getTitle();
+         softAssert.assertEquals(actualTitle, expectedTitle, "Title is mismatched");
+         //2. Url Assertion
+         String expectedUrl = "https://www.facebook.com/";
+         String actualUrl = driver.getCurrentUrl();
+         softAssert.assertEquals(actualUrl, expectedUrl, "URL is mismatched");
+         //3. Border Assertion
+         //#dddfe2 is a hexa value- converting it into rgb value
+         String expectedBorder = "1px solid rgb(221, 223, 226)";
+         String actualBorder = driver.findElement(By.id("email")).getCssValue("border");
+         softAssert.assertEquals(actualBorder, expectedBorder, "user text border is mismatched");
+         //4. Error message Assertion
+         String expectedErrorMessage = "The password that you've entered is incorrect. Forgotten password?";
+         String actualErrorMessage = driver.findElement(By.xpath("//div[@id='email_container']" +
+                   "//following-sibling::div[1]//child::div[2]")).getText();
+         softAssert.assertEquals(actualErrorMessage, expectedErrorMessage, "error message is mismatched");
+         driver.quit();
+         softAssert.assertAll();
+       }
+   }
+------------------------------------------------------------------------------------------------------------------
+Parameters in TestNG:
+Parameters are the information that user sends to a method.
+If we want to pass any information to the testng methods we use parameters.
+Parameters are used as per the requirements and scenarios.
+If we have a suite having 100 test cases and I want to execute those test cases in different browsers and on
+   different url, we can use parameters.
+To use parameters <parameter> tag is used in xml file.
+Parameters can be passed at the suite level and also at the test level.
+Parameters tag in xml file has name="ABC" and value="XYZ".
+The same name will be passed in the @Parameters("ABC").
+   Example:
+   In xml file
+   <parameter name="browserName" value="Chrome"/>
+   In test method
+   @Parameters("browserName")
+   @Test
+   public void test(String browser) {
+   }
+If we want to pass two parameters from the xml file then in the @Parameters we have to pass parameter in array.
+   Example:
+   In xml file
+      <parameter name="username" value="Admin"/>
+      <parameter name="password" value="admin"/>
+      In test method
+      @Parameters({"username", "password"})
+      @Test
+      public void test(String username, String password) {
+      }
+If same parameters have different values at suite level and test level, then test level parameter will have the
+   highest priority.
+This is because whenever a test method is invoked, first all the parameters at suite level are invoked and then
+   test level parameters are invoked, then the value at suite level is replaced by value at test level.
+   Example:
+   In xml file
+   <suite name="ABC">
+   <parameter name="browserName" value="chrome"/>
+      <test name="XYZ">
+      <parameter name="browserName" value="edge"
+      </test>
+   </suite>
+In this case test cases will be executed in the edge browser.
+
+Optional Parameters in TestNG:
+If user doesn't pass any value to the parameter, then the default value will be passed to rhe parameter.
+We just have to use @Optional annotation.
+   package com.testng;
+   public class OptionalParameterDemo {
+      WebDriver driver;
+      @Parameters("browserName")
+      @BeforeTest
+      public void setup(@Optional("chrome") String browser) {
+         switch(browser.toLowerCase()) {
+            case "chrome":
+               WebDriverManager.chromedriver().setup();
+               driver = new ChromeDriver();
+               break;
+            case "firefox":
+               WebDriverManager.firefoxdriver().setup();
+               driver = new FirefoxDriver();
+               break;
+            case "edge":
+               WebDriverManager.edgedriver().setup();
+               driver = new EdgeDriver();
+               break;
+            default:
+               System.out.println("browser is invalid");
+         }
+      driver.manage().window().maximize();
+      driver.manage().deleteAllCookies();
+      }
+      @AfterTest
+      public void tearDown() {
+         driver.quit();
+      }
+      @Test
+      public void launchGoogle() {
+         driver.get("https://www.google.com");
+      }
+      @Test
+      public void launchFacebook() {
+         driver.get("https://www.facebook.com");
+      }
+   }
+   xml file:
+   <suite name="Suite">
+      <test name="Test Google">
+         <parameter name="browserName" value="Chrome"/>
+         <classes>
+            <class name="com.testng.OptionalParameterDemo">
+               <methods>
+                  <include name="launchGoogle"/>
+               </methods>
+            </class>
+         </classes>
+      </test>
+      <test name="Test Facebook">
+         <parameter name="browserName" value=""/>
+         <classes>
+            <class name="com.testng.OptionalParameterDemo">
+               <methods>
+                  <include name="launchFacebook"/>
+               </methods>
+            </class>
+         </classes>
+      </test>
+   </suite>
+-----------------------------------------------------------------------------------------------------------------
+Enable/Disable:
+If we have 100 test cases and we want to execute only 15 test cases we can disable other test cases.
+We use enabled keyword to enable or disable a test case.
+We can enable or disable test case by two ways: By default value of enable is true.
+   Example 1:
+   1. @Test ---> We don't have to write (enabled = true) explicitly.
+      public void m1() {
+      }
+      @Test(enabled = false)
+      public void m2() {
+      }
+   Example 2:
+   2. In xml file ---> can only be used at test level.
+   <suite>
+      <test name="GoogleFacebookTest" enabled = "false"> ---> test case will not be executed.
+         <classes>
+            <class name="com.testng.FirstTest">
+               <methods>
+                  <include name="openGoogle"/>
+                  <include name="openFacebook"/>
+               </methods>
+            </class>
+         </classes>
+      </test>
+   </suite>
+-----------------------------------------------------------------------------------------------------------------
+Priority:
+Priority is an attribute that tells TestNG which order the tests need to follow.
+When we have multiple test cases and want to execute them in a particular order, the TestNG priority attribute
+   helps in executing the test cases in that order.
+The test cases get executed in ascending order of the priority list.
+   Example:
+   package com.testng;
+   public class PriorityDemo {
+      @Test(priority = 1)
+      public void signup() {
+         System.out.println("Signup");
+      }
+      @Test(priority = 2)
+      public void login() {
+         System.out.println("Login");
+      }
+      @Test(priority = 3)
+      public void searchForTheFlight() {
+         System.out.println("Search for the flight");
+      }
+      @Test(priority = 4)
+      public void bookFlight() {
+         System.out.println("Book flight");
+      }
+      @Test(priority = 5)
+      public void saveTicket() {
+         System.out.println("Save ticket");
+      }
+      @Test(priority = 6)
+      public void logout() {
+         System.out.println("logout");
+      }
+   }
+The default value of priority is 0.
+If we don't give any priority to any test case and other tests are prioritize by positive values, then test
+   with default priority will be executed first.
+We can also give negative values to priority.
+It will be executed before the tests with positive priority and zero priority.
+If same priority is provided to multiple test cases, they will be executed on the basis of ASCII code.
+In xml file tests will be executed in the order in which they are ordered on an xml file.
+This is because the default value of preserve order is true.
+If we explicitly provide false value to the preserve order then execution order will not be maintained.
+-----------------------------------------------------------------------------------------------------------------
+Ignore tests in TestNG:
+Ignore attribute is used to ignore any test case for execution.
+@Ignore can be used above a test or above a class or at the package level.
+   Example 1:
+   @Ignore
+   @Test
+   public void test() { ---> This test case will not be executed.
+   }
+   Example 2:
+   @Ignore
+   public class IgnoreDemo {
+      public void test() {
+         System.out.println("test");
+      }
+   }
+   To use @Ignore at the package level we have to create package-info.java file.
+   Example 3:
+   @Ignore
+   package com.demoIgnore;
+   import org.testng.annotations.Ignore;
+-----------------------------------------------------------------------------------------------------------------
+Grouping in TestNG:
+Grouping attribute in TestNG is used to categorize the test cases.
+   @Test(groups = {"smoke"})
+   public void test1() {
+      System.out.println("test1");
+   }
+We have to pass an array of String in groups.
+These groups can be run using xml files.
+Let we have two classes:
+   Class 1-
+   package com.grouping;
+   public class NewTest {
+      @Test(groups = {"smoke", "windows.smoke"})
+      public void test1() {
+         System.out.println("test1");
+      }
+      @Test(groups = {"smoke", "functional", "windows.sanity", "ios.sanity"})
+      public void test2() {
+         System.out.println("test2");
+      }
+      @Test(groups = {"functional", "regression"})
+      public void test3() {
+         System.out.println("test3");
+      }
+   }
+   Class 2-
+   package com.grouping;
+   public class NewTest2 {
+      @Test(groups = {"smoke", "sanity", "windows.functional"})
+      public void test4() {
+         System.out.println("test4");
+      }
+      @Test(groups = {"regression", "functional", "sanity"})
+      public void test5() {
+         System.out.println("test5");
+      }
+      @Test(groups = {"sanity", "regression", "ios.smoke"})
+      public void test6() {
+         System.out.println("test6");
+      }
+      @Test
+      public void test7() {
+         System.out.println("test7");
+      }
+   }
+Types of groups:
+1. Test groups
+   Case 1:
+   <suite name="Suite">
+      <test name="Test">
+         <groups>
+            <run>
+               <include name="sanity"/>
+            </run>
+         </groups>
+         <classes>
+            <class name="com.grouping.NewTest"/>
+            <class name="com.grouping.NewTest2"/>
+         </classes>
+      </test>
+   </suite>
+   Case 2:
+   <suite name="Suite">
+      <test name="Test">
+         <groups>
+            <run>
+               <include name="sanity"/>
+               <include name="regression"/>
+            </run>
+         </groups>
+         <classes>
+            <class name="com.grouping.NewTest"/>
+            <class name="com.grouping.NewTest2"/>
+         </classes>
+      </test>
+   </suite>
+2. Exclusion groups
+   <suite name="Suite">
+      <test name="Test">
+         <groups>
+            <run>
+               <include name="sanity"/>
+               <exclude name="regression"/>
+            </run>
+         </groups>
+         <classes>
+            <class name="com.grouping.NewTest"/>
+            <class name="com.grouping.NewTest2"/>
+         </classes>
+      </test>
+   </suite>
+3. Meta groups(group of groups)---> Meta groups are defined inside <define> tag.
+   <suite name="Suite">
+      <test name="Test">
+         <groups>
+            <define name="dailyBuild">
+               <include name="sanity"/>
+               <include name="functional"/>
+            </define>
+            <define name="weeklyBuild">
+               <include name="smoke"/>
+               <include name="sanity"/>
+               <include name="functional"/>
+               <include name="regression"/>
+            </define>
+            <run>
+               <include name="weeklyBuild"/>
+            </run>
+         </groups>
+         <classes>
+            <class name="com.grouping.NewTest"/>
+            <class name="com.grouping.NewTest2"/>
+         </classes>
+      </test>
+   </suite>
+4. Partial groups
+   If we define groups at the class level.
+   package com.grouping;
+   @Test(groups = {"all"})
+   public class NewTest {
+      @Test(groups = {"smoke"})
+      public void test1() {
+         System.out.println("test1");
+      }
+      @Test(groups = {"smoke", "functional"})
+      public void test2() {
+         System.out.println("test2");
+      }
+      @Test(groups = {"regression"})
+      public void test3() {
+         System.out.println("test3");
+      }
+      @Test
+      public void test4() {
+         System.out.println("test4");
+      }
+   }
+   xml file:
+   <suite name="Suite">
+      <test name="Test">
+         <groups>
+            <run>
+               <include name="all"/>
+            </run>
+         </groups>
+         <classes>
+            <class name="com.grouping.NewTest"/>
+            <class name="com.grouping.NewTest2"/>
+            <class name="com.grouping.PartialGroup"/>
+         </classes>
+      </test>
+   </suite>
+
+In xml file, we can include groups at test level as well as suite level.
+If we include any group at test level, its scope is within that test only.
+The advantage of this is we can include different groups in different tests.
+   Example:
+   <suite name="Suite">
+      <test name="Test1">
+         <groups>
+            <run>
+               <include name="smoke"/>
+            </run>
+         </groups>
+         <classes>
+            <class name="com.grouping.NewTest"/>
+         </classes>
+      </test>
+      <test name="Test2">
+         <groups>
+            <run>
+               <include name="sanity"/>
+            </run>
+         </groups>
+         <classes>
+            <class name="com.grouping.NewTest2"/>
+         </classes>
+      </test>
+   </suite>
+If we include group at the suite level, it will be applicable to all the tests present inside that suite.
+   <suite name="Suite">
+      <groups>
+         <run>
+            <include name="functional"/>
+         </run>
+      </groups>
+      <test name="Test1">
+         <classes>
+            <class name="com.grouping.NewTest"/>
+         </classes>
+      </test>
+      <test name="Test2">
+         <classes>
+            <class name="com.grouping.NewTest2"/>
+         </classes>
+      </test>
+      <test name="Test3">
+         <classes>
+            <class name="com.grouping.PartialGroup"/>
+         </classes>
+      </test>
+   </suite>
+We can also include the groups at suite level and at test level simultaneously.
+   <suite name="Suite">
+      <groups>
+         <run>
+            <include name="functional"/>
+         </run>
+      </groups>
+      <test name="Test1">
+         <groups>
+            <run>
+               <include name="smoke"/>
+            </run>
+         </groups>
+         <classes>
+            <class name="com.grouping.NewTest"/>
+         </classes>
+      </test>
+      <test name="Test2">
+         <groups>
+            <run>
+               <include name="sanity"/>
+            </run>
+         </groups>
+         <classes>
+            <class name="com.grouping.NewTest2"/>
+         </classes>
+      </test>
+      <test name="Test3">
+         <groups>
+            <run>
+               <include name="regression"/>
+            </run>
+         </groups>
+         <classes>
+            <class name="com.grouping.PartialGroup"/>
+         </classes>
+      </test>
+   </suite>
+Regular expressions in TestNG:
+If we want to execute only windows based groups
+   <suite name="Suite">
+      <groups>
+         <run>
+            <include name="windows.functional"/>
+            <include name="windows.smoke"/>
+            <include name="windows.sanity"/>
+         </run>
+      </groups>
+      <test name="Test1">
+         <classes>
+            <class name="com.grouping.NewTest"/>
+         </classes>
+      </test>
+      <test name="Test2">
+         <classes>
+            <class name="com.grouping.NewTest2"/>
+         </classes>
+      </test>
+   </suite>
+In the suite level, instead of using windows.functional, windows.smoke, windows.sanity we can use windows.*;
+-----------------------------------------------------------------------------------------------------------------
+Test Dependencies in TestNG:
+1. Test methods dependency:
+To create relation between test cases we use test dependency.
+For this we use dependsOnMethods attribute of TestNG which accept array of String because a test case can be
+   dependent upon two or more test cases.
+If a test case is failed the other dependent test cases are not executed but skipped.
+   Example:
+   package com.testDependency;
+   public class TestDependency {
+      static String trackingNumber = null;
+      @Test
+      public void createShipment() {
+         System.out.println(5/0); ---> We've intentionally failed this test case.
+         trackingNumber = "ABC@123";
+         System.out.println("Shipment is created");
+      }
+      @Test(dependsOnMethods = {"createShipment"})
+      public void trackShipment() throws Exception {
+         if(trackingNumber != null)
+            System.out.println("Shipment is tracked");
+         else
+            throw new Exception("Invalid Tracking Number");
+      }
+      @Test(dependsOnMethods = {"createShipment", "trackShipment"})
+      public void cancelShipment() throws Exception {
+         if(trackingNumber != null)
+            System.out.println("Shipment is cancelled");
+         else
+            throw new Exception("Invalid Tracking Number");
+      }
+   }
+Case 1: When priority is set to test methods-
+   package com.testDependency;
+   public class TestDependency {
+      static String trackingNumber = null;
+      @Test(priority = 2)
+      public void createShipment() {
+         System.out.println(5/0);
+         trackingNumber = "ABC@123";
+         System.out.println("Shipment is created");
+      }
+      @Test(priority = 1, dependsOnMethods = {"createShipment"})
+      public void trackShipment() throws Exception {
+         if(trackingNumber != null)
+            System.out.println("Shipment is tracked");
+         else
+            throw new Exception("Invalid Tracking Number");
+      }
+   }
+Priority will be ignored(not considered).
+Case 2: When a test case is failed, what will happen to the dependent test cases-
+   package com.testDependency;
+   public class TestDependency {
+      static String trackingNumber = null;
+      @Test(priority = 2)
+      public void createShipment() {
+         System.out.println(5/0);
+         trackingNumber = "ABC@123";
+         System.out.println("Shipment is created");
+      }
+      @Test(priority = 1, dependsOnMethods = {"createShipment"})
+      public void trackShipment() throws Exception {
+         if(trackingNumber != null)
+            System.out.println("Shipment is tracked");
+         else
+            throw new Exception("Invalid Tracking Number");
+      }
+   }
+The dependent test cases are skipped(not executed).
+In the above example, if createShipment is failed and we still want trackShipment to be executed, we can use
+   alwaysRun attribute and assign true to it.
+   package com.testDependency;
+   public class TestDependency {
+      static String trackingNumber = null;
+      @Test
+      public void createShipment() {
+         System.out.println(5/0);
+         trackingNumber = "ABC@123";
+         System.out.println("Shipment is created");
+      }
+      @Test(dependsOnMethods = {"createShipment"}, alwaysRun = true)
+      public void trackShipment() throws Exception {
+         if(trackingNumber != null)
+            System.out.println("Shipment is tracked");
+         else
+            throw new Exception("Invalid Tracking Number");
+      }
+   }
+Case 3: When a test case is ignored/skipped/deleted, what will happen to the dependent test cases-
+If createShipment is ignored/skipped/deleted, trackShipment neither executed nor skipped.
+   package com.testDependency;
+   public class TestDependency {
+      static String trackingNumber = null;
+      @Test(enabled = false)
+      public void createShipment() {
+         System.out.println(5/0);
+         trackingNumber = "ABC@123";
+         System.out.println("Shipment is created");
+      }
+      @Test(dependsOnMethods = {"createShipment"}, alwaysRun = true)
+      public void trackShipment() throws Exception {
+         if(trackingNumber != null)
+            System.out.println("Shipment is tracked");
+         else
+            throw new Exception("Invalid Tracking Number");
+      }
+   }
+If createShipment is ignored/skipped/deleted and we still want to execute trackShipment we can use
+   ignoreMissingDependencies attribute in TestNG and assign true to it.
+   package com.testDependency;
+   public class TestDependency {
+      static String trackingNumber = null;
+      @Test(enabled = false)
+      public void createShipment() {
+         System.out.println(5/0);
+         trackingNumber = "ABC@123";
+         System.out.println("Shipment is created");
+      }
+      @Test(dependsOnMethods = {"createShipment"}, ignoreMissingDependencies = true)
+      public void trackShipment() throws Exception {
+         if(trackingNumber != null)
+            System.out.println("Shipment is tracked");
+         else
+            throw new Exception("Invalid Tracking Number");
+      }
+   }
+2. Test groups dependency:
+In this test method is dependent upon a test groups.
+Case 1:
+   package com.testDependency;
+   public class TestGroupDependency {
+      @Test(groups = "smoke")
+      public void test1() {
+         System.out.println("smoke");
+      }
+      @Test(groups = "smoke")
+      public void test2() {
+         System.out.println("smoke");
+      }
+      @Test(groups = "smoke")
+      public void test3() {
+         System.out.println("smoke");
+      }
+      @Test(dependsOnGroups = {"smoke"})
+      public void test0() {
+         System.out.println("main test");
+      }
+   }
+If any method(it is considered the whole group as failed) or whole group is failed, dependent test case will be
+   skipped.
+Case 2: A test group depends upon other test group.
+This can be achieved through xml file only.
+   package com.testDependency;
+   public class TestGroupDependency {
+      @Test(groups = "smoke")
+      public void test1() {
+         System.out.println("smoke");
+      }
+      @Test(groups = "smoke")
+      public void test2() {
+         System.out.println("smoke");
+      }
+      @Test(groups = "smoke")
+      public void test3() {
+         System.out.println("smoke");
+      }
+      @Test(groups = "sanity")
+      public void test4() {
+         System.out.println("sanity");
+      }
+      @Test(groups = "sanity")
+      public void test5() {
+         System.out.println("sanity");
+      }
+      @Test(groups = "regression")
+      public void test6() {
+         System.out.println("regression");
+      }
+      @Test(groups = "regression")
+      public void test7() {
+         System.out.println("regression");
+      }
+      @Test(dependsOnGroups = {"smoke", "sanity", "regression"})
+      public void test0() {
+         System.out.println("main test");
+      }
+   }
+   xml file:
+   <?xml version="1.0" encoding="UTF-8" ?>
+   <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+   <suite name="Suite">
+      <test name="dependency">
+         <groups>
+            <dependencies>
+               <group name="sanity" depends-on="smoke"></group>
+               <group name="regression" depends-on="sanity"></group>
+            </dependencies>
+         </groups>
+         <classes>
+            <class name="com.testDependency.TestGroupDependency"/>
+         </classes>
+      </test>
+   </suite>
+   smoke--> sanity--> regression--> releaseTesting--> prodTesting
+-----------------------------------------------------------------------------------------------------------------
+DataProvider in TestNG:
+It is the way of passing parameters to test methods.
+It allow the users to write down data-driven tests in which we can run multiple times the same test method with
+   different sets of test data.
+@DataProvider annotation is declared with a method in our test class which can then be called on test methods.
+DataProvider annotation can take an attribute "name".
+TestNG uses an attribute called dataProvider in the called @Test to annotate the test methods.
+   Example:
+   package com.dataProvider;
+   public class DataProviderDemo {
+      WebDriver driver;
+      @Test(dataProvider = "OrangeHRMLoginTestData")
+      public void login(String userName, String password) throws InterruptedException {
+         WebDriverManager.chromedriver().setup();
+         driver = new ChromeDriver();
+         driver.manage().window().maximize();
+         driver.manage().deleteAllCookies();
+         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));
+         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+         driver.get("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login");
+         driver.findElement(By.xpath("//input[@name='username']")).sendKeys(userName);
+         driver.findElement(By.xpath("//input[@name='password']")).sendKeys(password);
+         driver.findElement(By.xpath("//button[@type='submit']")).click();
+         Thread.sleep(10000);
+         driver.findElement(By.xpath("//div[@class='oxd-sidepanel-body']//ul//li//a//span[text()='Admin']"))
+               .click();
+         driver.quit();
+      }
+      @DataProvider(name = "OrangeHRMLoginTestData")
+      public Object[][] loginData() {
+         Object[][] data = new Object[2][2];
+         data[0][0] = "Admin";
+         data[0][1] = "admin123";
+         data[1][0] = "Admin";
+         data[1][1] = "test123";
+         return data;
+      }
+   }
+If we have multiple DataProvider, we can differentiate every DataProvider by its name.
+If we don't provide any name to DataProvider, the method name can be passed as DataProvider name in the
+   @Test(dataProvider = "methodName")
+Parameters of test method and return types of DataProvider:
+It is not mandatory to return Object[][] from the DataProvider method.
+Return types of DataProvider-
+1. Object[]
+   Example:
+   package com.dataProvider;
+   public class DataProviderObjectArray {
+      @Test(dataProvider = "dp1")
+      public void test(Object o) {
+         System.out.println(o);
+      }
+      @DataProvider
+      public Object[] dp1() {
+         Object[] data = new Object[] {1, "Hello", 2};
+         return data;
+      }
+   }
+In this return type of DataProvider is Object[](array of objects), so the parameter in test method will be
+   Object o.
+Parameters in Test method is always depends on data.
+We can also use any data type in place of Object(since object is parent class for every data type).
+2. Object[][]
+   Example:
+   public class Practice {
+      @Test(dataProvider = "dp2")
+      public void test(Object[] obj) {
+         System.out.println(obj[0] + "-" + obj[1]);
+      }
+      @DataProvider
+      public Object[][] dp2() {
+         Object[][] data = new Object[][] {
+                   {"xyz", 123},
+                   {"abc", 234}
+         };
+         return data;
+      }
+   }
+In this example data represents two dimensional Object array, that means every set of values contain an array.
+Therefore parameter in the Test method will be one dimensional Object array.
+   @Test(dataProvider = "dp2")
+   public void test(Object user, Object pass) {
+      System.out.println(user + " " + pass);
+   }
+In this case we can also pass parameters like this because each set contains two values.
+If each set contains different no of values the we have to use Object[] as Test method parameter.
+   Example:
+   public class Practice {
+      @Test(dataProvider = "dp2")
+      public void test(Object[] obj) {
+         for(int i=0; i< obj.length; i++) {
+            System.out.println(obj[i]);
+         }
+         System.out.println("---------");
+      }
+      @DataProvider
+      public Object[][] dp2() {
+         Object[][] data = new Object[][] {
+                   {"xyz", 123, 12345},
+                   {"abc", 234},
+                   {"pqr", 789, "qwe", 567}
+         };
+         return data;
+      }
+   }
+3. Iterator<Object>
+   Example:
+   package com.dataProvider;
+   public class DataProviderIterator {
+      @Test(dataProvider = "dp2")
+      public void test(Object obj) {
+         System.out.println(obj);
+      }
+      @DataProvider
+      public Iterator<Object> dp2() {
+         List<Object> l  = new ArrayList<>();
+         l.add("Shubhanshu");
+         l.add("Dubey");
+         return l.iterator();
+      }
+   }
+4. Iterator<Object[]>
+   Example:
+   package com.dataProvider;
+   public class DataProviderIterator {
+      @Test(dataProvider = "dp2")
+      public void test(Object[] obj) {
+         System.out.println(obj[0] + "-" + obj[1]);
+      }
+      @DataProvider
+      public Iterator<Object[]> dp2() {
+         List<Object[]> l  = new ArrayList<>();
+         l.add(new Object[]{"Shubhanshu", 1004});
+         l.add(new Object[]{"Dubey", 1991});
+         return l.iterator();
+      }
+   }
+
+Partial use of DataProvider data:
+By default all the data inside DataProvider passes to the Test method.
+But if we want to use a no of data from DataProvider it is called partial usage of DataProvider.
+For the partial usage of DataProvider we use indices parameter inside DataProvider.
+This indices take int[] value(we are passing the indices of data we want to execute).
+   Example:
+   package com.dataProvider;
+   public class PartialDataProvider {
+      @Test(dataProvider = "dp3")
+      public void test(Object obj) {
+         System.out.println(obj);
+      }
+      @DataProvider(indices = {0,2})
+      public Object[] dp3() {
+         Object[] data = new Object[] {
+                   "Tony",
+                   "Stark",
+                   "Steve",
+                   "Rogers"
+         };
+         return data;
+      }
+   }
+
+DataProvider in a separate class:
+We can define DataProvider in a separate class.
+To use this DataProvider we use dataProviderClass attribute in @Test annotation.
+   Example:
+   package com.dataProvider;
+   public class DataSupplier {
+      @DataProvider
+      public Object[] dp4() {
+         Object[] data = new Object[] {
+                   "David Warner",
+                   "Steve Smith",
+                   "Pat Cummins",
+                   "Nathan Lyon"
+         };
+         return data;
+      }
+   }
+   package com.dataProvider;
+   public class SeparateDataProvider {
+      @Test(dataProvider = "dp4", dataProviderClass = DataSupplier.class)
+      public void test(Object obj) {
+         System.out.println(obj);
+      }
+   }
+We can define multiple DataProvider in a class.
+We can have multiple DataProvider in a project.
+
+Integration of DataProvider with Excel file:
+Libraries available for reading and writing the data from excel file:
+   1. Apache POI
+   2. JXL
+Excel file extension: Xls(older version), xlsx(newer version)---> Apache POI supports both
+We use two libraries:
+   1. Apache POI - poi
+   2. Apache POI - poi ooxml
+   Example:
+   package com.dataProvider;
+   public class ExcelDataSupplier {
+      @DataProvider(name = "loginData")
+      public Object[][] getData() throws Exception {
+         File excelFile = new File("src\\main\\resources\\testData.xlsx");
+         System.out.println(excelFile.exists());
+         FileInputStream fis = new FileInputStream(excelFile);
+         //for older version- xls-- HSSF
+         //for newer version- xlsx-- XSSF
+         XSSFWorkbook workbook = new XSSFWorkbook(fis);
+         XSSFSheet sheet = workbook.getSheet("loginData");
+         int numberOfRows = sheet.getPhysicalNumberOfRows();
+         int noOfColumns = sheet.getRow(0).getLastCellNum();
+         Object[][] data = new Object[numberOfRows-1][noOfColumns];
+         for(int i=0; i<numberOfRows-1; i++) {
+            for(int j=0; j<noOfColumns; j++) {
+               //It is used when no information is available that which type of data stored in Excel file.
+               DataFormatter df = new DataFormatter();
+               data[i][j] = df.formatCellValue(sheet.getRow(i+1).getCell(j));
+               //getStringCellValue() is used when Excel file contains only String value.
+               //System.out.println(sheet.getRow(i).getCell(j).getStringCellValue());
+            }
+            System.out.println();
+         }
+         workbook.close();
+         fis.close();
+         for (Object[] arrayData: data) {
+            System.out.println(Arrays.toString(arrayData));
+         }
+         return data;
+      }
+   }
+   package com.dataProvider;
+   public class DataProviderExcelIntegration {
+      WebDriver driver;
+      @Test(dataProvider = "loginData", dataProviderClass = ExcelDataSupplier.class)
+      public void login(String userName, String password) throws Exception {
+         WebDriverManager.chromedriver().setup();
+         driver = new ChromeDriver();
+         driver.manage().window().maximize();
+         driver.manage().deleteAllCookies();
+         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));
+         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+         driver.get("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login");
+         driver.findElement(By.xpath("//input[@name='username']")).sendKeys(userName);
+         driver.findElement(By.xpath("//input[@name='password']")).sendKeys(password);
+         driver.findElement(By.xpath("//button[@type='submit']")).click();
+         Thread.sleep(10000);
+         driver.findElement(By.xpath("//div[@class='oxd-sidepanel-body']//ul//li//a//span[text()='Admin']"))
+                   .click();
+         driver.quit();
+      }
+   }
+
+Parallel Execution with DataProvider in TestNG:
+If we have multiple test cases, then to execute all the test cases simultaneously(not sequential- one after other)
+we use parallel = true parameter in DataProvider.
+   @DataProvider(parallel = true).
+   Example:
+   package com.dataProvider;
+   public class DataProviderParallelExecution {
+      WebDriver driver;
+      @Test(dataProvider = "OrangeHRMLoginTestData")
+      public void login(String userName, String password) throws InterruptedException {
+         WebDriverManager.chromedriver().setup();
+         driver = new ChromeDriver();
+         driver.manage().window().maximize();
+         driver.manage().deleteAllCookies();
+         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));
+         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+         driver.get("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login");
+         driver.findElement(By.xpath("//input[@name='username']")).sendKeys(userName);
+         driver.findElement(By.xpath("//input[@name='password']")).sendKeys(password);
+         driver.findElement(By.xpath("//button[@type='submit']")).click();
+         Thread.sleep(10000);
+         driver.findElement(By.xpath("//div[@class='oxd-sidepanel-body']//ul//li//a//span[text()='Admin']"))
+                  .click();
+         driver.quit();
+      }
+      @DataProvider(name = "OrangeHRMLoginTestData", parallel = true)
+      public Object[][] loginData() {
+         Object[][] data = new Object[2][2];
+         data[0][0] = "Admin";
+         data[0][1] = "admin123";
+         data[1][0] = "Admin";
+         data[1][1] = "test123";
+         return data;
+      }
+   }
+If we have 100 test cases and we execute all the test cases parallelly then there maybe chance to get some
+   performance issue.
+So instead of executing all the test cases parallelly we can execute 100 test cases in a group of 2, 3 or 5.
+For this we use data-provider-thread-count in xml file at the suite level.
+   Example:
+   <suite name="Suite" data-provider-thread-count="2">
+      <test name="LoginParallelExecutionTest">
+         <classes>
+            <class name="com.dataProvider.DataProviderParallelExecution"/>
+         </classes>
+      </test>
+   </suite>
+----------------------------------------------------------------------------------------------------------------
+timeout and expectedExceptions attribute in TestNG:
+The timeOut is an attribute in TestNG that can put an end to the execution of a test method if that method
+   takes time beyond the timeOut duration.
+A timeOut time is set in milliseconds, after that the test method will be marked Failed and thrown
+   ThreadTimeoutException.
+   Example:
+   package com.testng;
+   public class TestAttributes {
+      @Test(timeOut = 5000)
+      public void test() {
+         WebDriverManager.chromedriver().setup();
+         WebDriver driver = new ChromeDriver();
+         driver.get("https://www.hyrtutorials.com/");
+         driver.quit();
+      }
+   }
+TestNG supports multiple exceptions being provided for verification using attribute expectedExceptions.
+If the exception is thrown by the test method is not part of the user entered list of exceptions, the test will
+   be marked as failed.
+   Example:
+   package com.testng;
+   public class TestAttributes {
+      @Test(expectedExceptions = {NoSuchElementException.class})
+      public void test1() {
+         WebDriverManager.chromedriver().setup();
+         WebDriver driver = new ChromeDriver();
+         driver.get("https://www.hyrtutorials.com/");
+         driver.findElement(By.id("abcd")).click();// we failed this test case intentionally.
+         driver.quit();
+      }
+   }
+In the above example there is no such element having an attribute id="abcd", but the test case will be marked as
+   passed because in the expectedExceptions attribute we passed NoSuchElementException.
+If the test method is not throwing the exception that you expected test will be marked as failed.
+The attribute expectedExceptions takes array value.
+It is used for negative testing.
+To verify the exception we use this attribute.
+To verify the value we use Assertions.
+----------------------------------------------------------------------------------------------------------------
+Parallel execution of test cases in TestNG:
+To execute the tests side by side we need parallel execution.
+It saves execution time.
+We can achieve parallel execution through xml file.
+   Class 1:
+   package com.parallelTesting;
+   public class TestClass1 {
+      @Test
+      public void testMethod1() {
+         System.out.println("TestClass1 - testMethod1 " + Thread.currentThread().getId());
+      }
+      @Test
+      public void testMethod2() {
+         System.out.println("TestClass1 - testMethod2 " + Thread.currentThread().getId());
+      }
+      @Test
+      public void testMethod3() {
+         System.out.println("TestClass1 - testMethod3 " + Thread.currentThread().getId());
+      }
+      @Test
+      public void testMethod4() {
+         System.out.println("TestClass1 - testMethod4 " + Thread.currentThread().getId());
+      }
+   }
+   Class 2:
+   package com.parallelTesting;
+   public class TestClass2 {
+      @Test
+      public void testMethod5() {
+         System.out.println("TestClass2 - testMethod5 " + Thread.currentThread().getId());
+      }
+      @Test
+      public void testMethod6() {
+         System.out.println("TestClass2 - testMethod6 " + Thread.currentThread().getId());
+      }
+      @Test
+      public void testMethod7() {
+         System.out.println("TestClass2 - testMethod7 " + Thread.currentThread().getId());
+      }
+   }
+   Class 3:
+   package com.parallelTesting;
+   public class TestClass3 {
+      @Test
+      public void testMethod8() {
+         System.out.println("TestClass3 - testMethod8 " + Thread.currentThread().getId());
+      }
+      @Test
+      public void testMethod9() {
+         System.out.println("TestClass3 - testMethod9 " + Thread.currentThread().getId());
+      }
+      @Test
+      public void testMethod10() {
+         System.out.println("TestClass3 - testMethod10 " + Thread.currentThread().getId());
+      }
+      @Test
+      public void testMethod11() {
+         System.out.println("TestClass3 - testMethod11 " + Thread.currentThread().getId());
+      }
+   }
+   Example:
+   <suite name="Suite" parallel="" thread-count="">
+      <test name="Test1">
+         <classes>
+            <class name="com.parallelTesting.TestClass1"/>
+         </classes>
+      </test>
+      <test name="Test2">
+         <classes>
+            <class name="com.parallelTesting.TestClass2"/>
+         </classes>
+      </test>
+      <test name="Test3">
+         <classes>
+            <class name="com.parallelTesting.TestClass3"/>
+         </classes>
+      </test>
+   </suite>
+Two attributes are used inside xml file to achieve parallel execution- parallel and thread-count.\ and can be
+   used at suite level as well as test level.
+The attribute thread-count has default value 5 and cannot be assigned negative value(IllegalArgumentException).
+   Case 1:
+   parallel="none" thread-count="2"
+   No parallel execution, even though thread-count is 2.
+   Case 2:
+   parallel="false" thread-count="2"
+   No parallel execution, even though thread-count is 2.
+   Case 3:
+   parallel="true" thread-count="2"
+   Parallel execution and two threads will be running simultaneously.
+   Case 4:
+   parallel="tests" thread-count="2"
+   Two threads were created and parallel execution at test level.
+   This can be written only at the suite level.
+   At test level it has no meaning.
+   Case 5:
+   parallel="classes" thread-count="2"
+   Parallel execution at the class level.
+   Case 6:
+   parallel="methods" thread-count="2"
+   Parallel execution at method level.
+   Case 5 and 6 also can be written at test level.
+----------------------------------------------------------------------------------------------------------------
+Invocation count, invocation timeout and thread pool size in TestNG:
+   Example:
+   package com.testng;
+   public class InvocationCountDemo {
+       @Test(invocationCount = 3, invocationTimeOut = 20000, threadPoolSize = 2)
+       public void test() {
+           WebDriverManager.chromedriver().setup();
+           WebDriver driver = new ChromeDriver();
+           driver.get("https://randomuser.me/");
+           driver.findElement(By.xpath("//li[@data-label='name']")).click();
+           System.out.println(driver.findElement(By.xpath("//p[@id='user_value']")).getText());
+           driver.quit();
+       }
+   }
+If we want to execute any test case multiple times we use invocationCount.
+It take an int value.
+The invocationTimeOut attribute puts an end to execution if execution takes time beyond the timeout duration.
+The test case marked as failed and it takes value in milliseconds.
+To create more than one thread to start the execution of multiple test cases simultaneously.
+--------------------------------------------------------------------------------------------------------------
+TestNG Listeners:
+Listener is defined as interface that modifies the default behaviour of TestNG.
+As the name suggests, listeners listen to the event defined in the script and behave accordingly.
+It can be used by implementing Listener interface.
+Few Listeners in TestNG:
+   1. IAnnotationTransformer
+   2. IAnnotationTransformer2
+   3. IConfigurable
+   4. IConfigurationListener
+   5. IExecutionListener
+   6. IHookable
+   7. IInvokedMethodListener
+   8. IInvokedMethodListener2
+   9. IMethodInterceptor
+   10. IReporter
+   11. ISuiteListener
+   12. ITestListener
+
+ITestListener has following methods:
+   1. onTestStart
+   2. onTestSuccess
+   3. onTestFailure
+   4. onTestSkipped
+   5. onTestFailedWithTimeout
+   6. onStart
+   7. onFinish
+
+Using Listeners at class level:
+   Example:
+   package com.listeners;
+   public class ITestListenerClass implements ITestListener {
+      @Override
+      public void onTestStart(ITestResult result) {
+         System.out.println("onTestStart method executed");
+      }
+      @Override
+      public void onTestSuccess(ITestResult result) {
+         System.out.println("onTestSuccess method executed");
+      }
+      @Override
+      public void onTestFailure(ITestResult result) {
+         System.out.println("onTestFailure method executed");
+      }
+      @Override
+      public void onTestSkipped(ITestResult result) {
+         System.out.println("onTestSkipped method executed");
+      }
+      @Override
+      public void onTestFailedWithTimeout(ITestResult result) {
+         System.out.println("onTestFailedWithTimeout method executed");
+      }
+      @Override
+      public void onStart(ITestContext context) {
+         System.out.println("onStart method executed");
+      }
+      @Override
+      public void onFinish(ITestContext context) {
+         System.out.println("onFinish method executed");
+      }
+      @Test
+      public void testMethod4() {
+         System.out.println("testMethod4 executed");
+      }
+   }
+   package com.listeners;
+   @Listeners({ITestListenerClass.class})
+   public class TestClass {
+      @Test
+      public void testMethod1() {
+         System.out.println("testMethod1 executed");
+      }
+      @Test
+      public void testMethod2() {
+         System.out.println(5/0);
+         System.out.println("testMethod2 executed");
+      }
+      @Test(dependsOnMethods = "testMethod2")
+      public void testMethod3() {
+         System.out.println("testMethod3 executed");
+      }
+   }
+Whenever we define a listener class, we have to implicitly specify it to test class like above.
+
+Using Listeners at Suite level:
+   <suite name="Suite">
+      <listeners>
+         <listener class-name="com.listeners.ITestListenerClass"></listener>
+      </listeners>
+      <test name="Test 1">
+         <classes>
+            <class name="com.listeners.TestClass">
+               <methods>
+                  <include name="testMethod1"/>
+                  <include name="testMethod4"/>
+               </methods>
+            </class>
+         </classes>
+      </test>
+      <test name="Test 2">
+         <classes>
+            <class name="com.listeners.TestClass">
+               <methods>
+                  <include name="testMethod2"/>
+                  <include name="testMethod3"/>
+               </methods>
+            </class>
+         </classes>
+      </test>
+   </suite>
+Everytime instead of implementing Listener interface we can extends TestListenerAdapter class which implements
+   all the Listeners interface in TestNG.
+
+Difference between annotations and listeners(looks somewhat similar but different):
+Annotations will be executed based on test methods or class or suite.
+But listeners will be executed based on the events.
+--------------------------------------------------------------------------------------------------------------
+Capture Screenshots for only failed test cases:
+We can achieve this functionality in two ways:
+1. Using Listeners:
+   Example:
+   package com.screenshots;
+   public class BaseTest {
+      public static WebDriver driver;
+      @BeforeTest
+      public void setup() {
+         WebDriverManager.chromedriver().setup();
+         driver = new ChromeDriver();
+         driver.manage().window().maximize();
+         driver.manage().deleteAllCookies();
+      }
+      @AfterTest
+      public void tearDown() {
+         driver.quit();
+      }
+      public void captureScreenshot(String fileName) {
+         TakesScreenshot takesScreenshot = (TakesScreenshot) driver;
+         File sourceFile = takesScreenshot.getScreenshotAs(OutputType.FILE);
+         File destFile = new File("./Screenshots/"+ fileName + ".png");
+         try {
+            FileUtils.copyFile(sourceFile, destFile);
+         } catch (IOException e) {
+            e.printStackTrace();
+         }
+         System.out.println("Screenshot taken successfully");
+      }
+   }
+   package com.screenshots;
+   public class ITestListenerClass extends BaseTest implements ITestListener {
+      @Override
+      public void onTestFailure(ITestResult result) {
+         captureScreenshot(result.getMethod().getMethodName());
+      }
+   }
+   package com.screenshots;
+   public class TestClass extends BaseTest {
+      @Test
+      public void testGoogle() {
+         driver.get("https://www.google.com/");
+         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));
+         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+         String actualTitle = driver.getTitle();
+         String expectedTitle = "Google";
+         Assert.assertEquals(actualTitle, expectedTitle, "Title is mismatched");
+         driver.quit();
+      }
+      @Test
+      public void testFacebook() {
+         driver.get("https://www.facebook.com/");
+         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));
+         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+         driver.findElement(By.xpath("//input[@id='email']"))
+                   .sendKeys("Hyr Tutorials", Keys.ENTER);
+         String actualTitle = driver.getTitle();
+         String expectedTitle = "Facebbok123";
+         Assert.assertEquals(actualTitle, expectedTitle);
+         driver.quit();
+      }
+      @Test
+      public void testOrangeHRM() {
+         driver.get("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login");
+         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));
+         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+         driver.findElement(By.xpath("//input[@name='username']")).sendKeys("Admin");
+         driver.findElement(By.xpath("//input[@name='password']")).sendKeys("admin1234");
+         driver.findElement(By.xpath("//button[@type='submit']")).click();
+         driver.findElement(By.xpath("//div[@class='oxd-sidepanel-body']//ul//li//a//span[text()='Admin']"))
+                   .click();
+         driver.quit();
+      }
+   }
+   xml file:
+   <suite name="Suite">
+      <listeners>
+         <listener class-name="com.screenshots.ITestListenerClass"/>
+      </listeners>
+      <test name="Test1">
+         <classes>
+            <class name="com.screenshots.TestClass">
+               <methods>
+                  <include name="testGoogle"/>
+               </methods>
+            </class>
+         </classes>
+      </test>
+      <test name="Test2">
+         <classes>
+            <class name="com.screenshots.TestClass">
+               <methods>
+                  <include name="testFacebook"/>
+               </methods>
+            </class>
+         </classes>
+      </test>
+      <test name="Test3">
+         <classes>
+            <class name="com.screenshots.TestClass">
+               <methods>
+                  <include name="testOrangeHRM"/>
+               </methods>
+            </class>
+         </classes>
+      </test>
+   </suite>
+Everytime we execute xml file and if any test case is failed then the screenshot will be captured.
+But everytime we execute, the captured screenshot for any failed test case will be overriding already
+   screenshots.
+To overcome this problem we can use DateTimeFormatter to name the folder containing the screenshots according to
+   date and time.
+We just have to make the changes in BaseTest class.
+   package com.screenshots;
+   public class BaseTest {
+      public static WebDriver driver;
+      public static String screenshotSubFolderName;
+      @BeforeTest
+      public void setup() {
+         WebDriverManager.chromedriver().setup();
+         driver = new ChromeDriver();
+         driver.manage().window().maximize();
+         driver.manage().deleteAllCookies();
+      }
+      @AfterTest
+      public void tearDown() {
+         driver.quit();
+      }
+      public void captureScreenshot(String fileName) {
+         if(screenshotSubFolderName == null) {
+            LocalDateTime myDateTime = LocalDateTime.now();
+            DateTimeFormatter myFormatDateTime = DateTimeFormatter.ofPattern("dd-mm-yyyy hh-mm-ss");
+            screenshotSubFolderName = myDateTime.format(myFormatDateTime);
+         }
+         TakesScreenshot takesScreenshot = (TakesScreenshot) driver;
+         File sourceFile = takesScreenshot.getScreenshotAs(OutputType.FILE);
+         File destFile = new File("./Screenshots/"+ screenshotSubFolderName + "/" + fileName + ".png");
+         try {
+            FileUtils.copyFile(sourceFile, destFile);
+         } catch (IOException e) {
+            e.printStackTrace();
+         }
+         System.out.println("Screenshot taken successfully");
+      }
+   }
+If we want to append the test name of xml file with the screenshot name, we have to make changes in
+   ITestListenerClass
+   public class ITestListenerClass extends BaseTest implements ITestListener {
+      @Override
+      public void onTestFailure(ITestResult result) {
+         captureScreenshot(result.getTestContext().getName() + "-" + result.getMethod().getMethodName());
+      }
+   }
+2. Using dependency injection:
+TestNG will directly inject the value at runtime which is called dependency injection.
+To achieve this first remove the Listener tag from xml file.
+Second add a method inside BaseTest class with @AfterMethod annotation
+   @AfterMethod
+   public void screenshotCapture(ITestResult result) {
+      //result.getStatus() returns int value
+      if(result.getStatus() == ITestResult.FAILURE) {
+         captureScreenshot(result.getTestContext().getName() + "-" + result.getMethod().getMethodName());
+      }
+   }
+----------------------------------------------------------------------------------------------------------------

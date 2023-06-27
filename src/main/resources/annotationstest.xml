@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Suite">
+    <test name="Test" enabled="false">
+        <classes>
+            <class name="com.testng.AnnotationsDemo">
+                <methods>
+                    <include name="launchApp"/>
+                    <include name="login"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    <test name="Priority Test">
+        <classes>
+            <class name="com.testng.PriorityDemo">
+                <methods>
+                    <include name="signup"/>
+                    <include name="login"/>
+                    <include name="searchForTheFlight"/>
+                    <include name="bookFlight"/>
+                    <include name="saveTicket"/>
+                    <include name="logout"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>

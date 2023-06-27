@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="DemoSuite">
+    <parameter name="browserName" value="Chrome"></parameter>
+    <parameter name="Url" value="https://opensource-demo.orangehrmlive.com/web/index.php/auth/login"></parameter>
+    <test name="OrangeHRM">
+        <classes>
+            <class name="com.testng.ParametersDemo">
+                <methods>
+                    <include name="launchBrowser"/>
+                    <include name="launchApp"/>
+                    <include name="pageTitleTest"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>

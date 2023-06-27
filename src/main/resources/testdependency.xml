@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Suite">
+    <test name="dependency">
+        <groups>
+            <dependencies>
+                <group name="sanity" depends-on="smoke"></group>
+                <group name="regression" depends-on="sanity"></group>
+            </dependencies>
+        </groups>
+        <classes>
+            <class name="com.testDependency.TestGroupDependency"/>
+        </classes>
+    </test>
+</suite>

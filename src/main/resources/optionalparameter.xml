@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Suite">
+    <test name="Test Google">
+        <parameter name="browserName" value="Chrome"/>
+        <classes>
+            <class name="com.testng.OptionalParameterDemo">
+                <methods>
+                    <include name="launchGoogle"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    <test name="Test Facebook">
+        <parameter name="browserName" value=""/>
+        <classes>
+            <class name="com.testng.OptionalParameterDemo">
+                <methods>
+                    <include name="launchFacebook"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>
